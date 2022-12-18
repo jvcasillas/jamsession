@@ -12,7 +12,6 @@ knitr::opts_chunk$set(
   fig.retina = 2, 
   warning = FALSE,
   message = FALSE, 
-  column = "screen", 
   out.width = "80%", 
   fig.align = "center"
   )
@@ -29,6 +28,7 @@ library("ggplot2")
 library("stringr")
 library("ggimage")
 library("glue")
+library("kableExtra")
 
 suns <- c(
   yellow = "#FF6900", 
@@ -86,6 +86,7 @@ js_long <- jamstar %>%
 
 ```{r}
 #| label: overall-jamstars
+#| column: "screen"
 js_long %>% 
   count(pick) %>% 
   na.omit() %>% 
@@ -108,6 +109,7 @@ js_long %>%
 
 ```{r}
 #| label: jamstars-by-host
+#| column: "screen"
 ylim_max <- js_long %>% 
   group_by(picker) %>% 
   count(pick) %>% 
@@ -145,4 +147,38 @@ js_long %>%
 
 ```
 
+
+```{r}
+n_weird <- js_long %>% 
+  filter(is.na(pick)) %>% 
+  pull(date) %>% 
+  unique() %>% 
+  length
+
+forgot <- js_long %>% 
+  filter(is.na(pick), is.na(picked_first)) 
+
+n_games <- js_long %>% pull(date) %>% unique %>% length
+```
+
+## Misc. 
+
+- Data come from a total of `r n_games` games. 
+- There are `r n_weird` abnormalities
+  - On `r forgot$date %>% unique %>% str_flatten(collapse = ", ")` there was no jamstar
+  - Reasons (from `notes`): `r forgot$notes %>% unique() %>% str_flatten(collapse = ", ")`
+- On 2022-11-26 Lissy was gone
+- On 2022-11-30 Lissy gave two jamstars 
+
+## Data
+
+[download](https://docs.google.com/spreadsheets/d/1sn6uaCZzF3U6pwOh0aiNWkb3XDyTqrlcuyJqmTe_PpE/edit?usp=sharing)
+
+```{r}
+#| label: table
+
+kbl(jamstar) %>%
+  kable_styling(bootstrap_options = c("striped", "hover", "condensed"))
+
+```
 
