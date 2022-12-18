@@ -128,9 +128,10 @@ js_long %>%
     linewidth = 3, color = suns["yellow"]) + 
   geom_image(aes(image = url), size = 0.08) + 
   scale_y_continuous(
-    breaks = seq(0, ceiling(ylim_max + (ylim_max * 0.2)), length.out = 6)
+    breaks = seq(0, ceiling(ylim_max + (ylim_max * 0.2)), length.out = 6), 
+    labels = seq(0, ceiling(ylim_max + (ylim_max * 0.2)), length.out = 6)
     ) + 
-  coord_cartesian(ylim = c(0, ceiling(ylim_max + (ylim_max * 0.2)))) + 
+  coord_cartesian(ylim = c(0, round(ylim_max + (ylim_max * 0.2)))) + 
   labs(x = NULL, y = "n", 
        title = "Most jamstars") + 
   ds4ling::ds4ling_bw_theme() + 
@@ -143,3 +144,5 @@ js_long %>%
     )
 
 ```
+
+
