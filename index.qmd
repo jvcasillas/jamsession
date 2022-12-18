@@ -1,0 +1,145 @@
+---
+title: "Jam star of the game"
+format: html
+---
+
+```{r}
+#| label: setup
+#| include: false
+
+knitr::opts_chunk$set(
+  echo = FALSE, 
+  fig.retina = 2, 
+  warning = FALSE,
+  message = FALSE, 
+  column = "screen", 
+  out.width = "80%", 
+  fig.align = "center"
+  )
+
+#| column: screen
+#| out.width: "80%"
+#| fig.align: "center"
+library("readr")
+library("tidyr")
+library("dplyr")
+library("here")
+library("forcats")
+library("ggplot2")
+library("stringr")
+library("ggimage")
+library("glue")
+
+suns <- c(
+  yellow = "#FF6900", 
+  orange = "#FE5000",
+  red = "#EF3340", 
+  purple = "#5F259F"
+)
+
+img_urls <- tribble(
+  ~"pick", ~"url", 
+   "Mikal Bridges"        , "https://www.basketball-reference.com/req/202106291/images/players/bridgmi01.jpg", 
+   "Devin Booker"         , "https://www.basketball-reference.com/req/202106291/images/players/bookede01.jpg",
+   "Deandre Ayton"        , "https://www.basketball-reference.com/req/202106291/images/players/aytonde01.jpg",
+   "Chris Paul"           , "https://www.basketball-reference.com/req/202106291/images/players/paulch01.jpg",
+ #  "Jae Crowder"          , "https://www.basketball-reference.com/req/202106291/images/players/crowdja01.jpg",
+   "Landry Shamet"        , "https://www.basketball-reference.com/req/202106291/images/players/shamela01.jpg",
+   "Dario Šarić"          , "https://www.basketball-reference.com/req/202106291/images/players/saricda01.jpg",
+   "Cam Payne"        , "https://www.basketball-reference.com/req/202106291/images/players/payneca01.jpg",
+   "Cam Johnson"      , "https://www.basketball-reference.com/req/202106291/images/players/johnsca02.jpg",
+   "Torrey Craig"         , "https://www.basketball-reference.com/req/202106291/images/players/craigto01.jpg",
+   "Damion Lee"           , "https://www.basketball-reference.com/req/202106291/images/players/leeda03.jpg",
+   "Josh Okogie"          , "https://www.basketball-reference.com/req/202106291/images/players/okogijo01.jpg",
+   "Bismack Biyombo"      , "https://www.basketball-reference.com/req/202106291/images/players/biyombi01.jpg",
+   "Jock Landale"         , "https://www.basketball-reference.com/req/202106291/images/players/landajo01.jpg", 
+   "Duane Washington Jr." , "https://www.basketball-reference.com/req/202106291/images/players/washidu02.jpg", 
+   "Ish Wainright"        , "https://www.basketball-reference.com/req/202106291/images/players/wainris01.jpg", 
+) %>% 
+  mutate(url_i = glue("<img src='{url}' width='15'/><br>*{pick}*"))
+
+jam_img <- tribble(
+  ~"picker", ~"url_picker", 
+  "Voita", "./voita_w.png", 
+  "Lissy", "./lissy_w.png"
+) %>% 
+  mutate(url_pi = glue("<img src='{url_picker}' width='75'/><br>*{picker}*"))
+
+```
+
+```{r}
+#| label: load-data
+jamstar <- read_csv("jam_star.csv")
+```
+
+
+```{r}
+#| label: to-long
+js_long <- jamstar %>% 
+  pivot_longer(
+    cols = c("Voita", "Lissy"), 
+    names_to = "picker", 
+    values_to = "pick"
+    )
+```
+
+
+```{r}
+#| label: overall-jamstars
+js_long %>% 
+  count(pick) %>% 
+  na.omit() %>% 
+  left_join(., img_urls, by = "pick") %>% 
+  mutate(url_i = fct_reorder(url_i, n)) %>% 
+  ggplot() + 
+  aes(x = n, y = url_i) + 
+  geom_segment(aes(x = 0, xend = n, yend = url_i), 
+    linewidth = 3, color = suns["purple"]) + 
+  geom_point(color = suns["orange"], fill = suns["yellow"], 
+    pch = 21, size = 9, stroke = 2) +
+  geom_text(aes(label = n), color = "white", size = 5) + 
+  labs(x = "n", y = "Athlete", 
+       title = "Most jamstars") + 
+  ds4ling::ds4ling_bw_theme() + 
+  theme(axis.text.y = ggtext::element_markdown(color = "black", size = 6))
+```
+
+
+
+```{r}
+#| label: jamstars-by-host
+ylim_max <- js_long %>% 
+  group_by(picker) %>% 
+  count(pick) %>% 
+  pull(n) %>% 
+  max()
+
+js_long %>% 
+  group_by(picker) %>% 
+  count(pick) %>% 
+  left_join(., img_urls, by = "pick") %>% 
+  left_join(., jam_img, by = "picker") %>% 
+  mutate(pick = fct_reorder2(pick, picker, n)) %>% 
+  na.omit() %>% 
+  ggplot() + 
+  aes(x = pick, y = n) + 
+  facet_grid(. ~ url_pi, switch = "x") + 
+  geom_segment(aes(xend = pick, y = 0, yend = n), 
+    linewidth = 3, color = suns["yellow"]) + 
+  geom_image(aes(image = url), size = 0.08) + 
+  scale_y_continuous(
+    breaks = seq(0, ceiling(ylim_max + (ylim_max * 0.2)), length.out = 6)
+    ) + 
+  coord_cartesian(ylim = c(0, ceiling(ylim_max + (ylim_max * 0.2)))) + 
+  labs(x = NULL, y = "n", 
+       title = "Most jamstars") + 
+  ds4ling::ds4ling_bw_theme() + 
+  theme(
+    #axis.text.x = ggtext::element_markdown(color = "black", size = 6), 
+    axis.text.x = element_blank(), 
+    axis.ticks.x = element_blank(),
+    strip.text = ggtext::element_markdown(color = 'black', size = 10), 
+    strip.background = element_blank()
+    )
+
+```
