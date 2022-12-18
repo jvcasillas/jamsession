@@ -3,6 +3,8 @@ title: "Jam star of the game"
 format: html
 ---
 
+Last update: `r Sys.Date()`
+
 ```{r}
 #| label: setup
 #| include: false
