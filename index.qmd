@@ -171,6 +171,7 @@ n_games <- js_long %>% pull(date) %>% unique %>% length
   - Reasons (from `notes`): `r forgot$notes %>% unique() %>% str_flatten(collapse = ", ")`
 - On 2022-11-26 Lissy was gone
 - On 2022-11-30 Lissy gave two jamstars 
+- On 2022-12-20 Voita was gone
 
 ## Data
 
